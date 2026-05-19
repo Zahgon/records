@@ -15,11 +15,7 @@ def isexception(obj):
     """Given an object, return a boolean indicating whether it is an instance
     or subclass of :py:class:`Exception`.
     """
-    if isinstance(obj, Exception):
-        return True
-    if isclass(obj) and issubclass(obj, Exception):
-        return True
-    return False
+    pass
 
 
 class Record(object):
@@ -40,7 +36,7 @@ class Record(object):
 
     def values(self):
         """Returns the list of values from the query."""
-        return self._values
+        pass
 
     def __repr__(self):
         return "<Record {}>".format(self.export("json")[1:-1])
@@ -84,20 +80,12 @@ class Record(object):
 
     def as_dict(self, ordered=False):
         """Returns the row as a dictionary, as ordered."""
-        items = zip(self.keys(), self.values())
-
-        return OrderedDict(items) if ordered else dict(items)
+        pass
 
     @property
     def dataset(self):
         """A Tablib Dataset containing the row."""
-        data = tablib.Dataset()
-        data.headers = self.keys()
-
-        row = _reduce_datetimes(self.values())
-        data.append(row)
-
-        return data
+        pass
 
     def export(self, format, **kwargs):
         """Exports the row to the given format."""
@@ -133,8 +121,6 @@ class RecordCollection(object):
                     return
             i += 1
 
-    def next(self):
-        return self.__next__()
 
     def __next__(self):
         try:
@@ -174,85 +160,29 @@ class RecordCollection(object):
     @property
     def dataset(self):
         """A Tablib Dataset representation of the RecordCollection."""
-        # Create a new Tablib Dataset.
-        data = tablib.Dataset()
-
-        # If the RecordCollection is empty, just return the empty set
-        # Check number of rows by typecasting to list
-        if len(list(self)) == 0:
-            return data
-
-        # Set the column names as headers on Tablib Dataset.
-        first = self[0]
-
-        data.headers = first.keys()
-        for row in self.all():
-            row = _reduce_datetimes(row.values())
-            data.append(row)
-
-        return data
+        pass
 
     def all(self, as_dict=False, as_ordereddict=False):
         """Returns a list of all rows for the RecordCollection. If they haven't
         been fetched yet, consume the iterator and cache the results."""
+        pass
 
-        # By calling list it calls the __iter__ method
-        rows = list(self)
-
-        if as_dict:
-            return [r.as_dict() for r in rows]
-        elif as_ordereddict:
-            return [r.as_dict(ordered=True) for r in rows]
-
-        return rows
-
-    def as_dict(self, ordered=False):
-        return self.all(as_dict=not (ordered), as_ordereddict=ordered)
 
     def first(self, default=None, as_dict=False, as_ordereddict=False):
         """Returns a single record for the RecordCollection, or `default`. If
         `default` is an instance or subclass of Exception, then raise it
         instead of returning it."""
-
-        # Try to get a record, or return/raise default.
-        try:
-            record = self[0]
-        except IndexError:
-            if isexception(default):
-                raise default
-            return default
-
-        # Cast and return.
-        if as_dict:
-            return record.as_dict()
-        elif as_ordereddict:
-            return record.as_dict(ordered=True)
-        else:
-            return record
+        pass
 
     def one(self, default=None, as_dict=False, as_ordereddict=False):
         """Returns a single record for the RecordCollection, ensuring that it
         is the only record, or returns `default`. If `default` is an instance
         or subclass of Exception, then raise it instead of returning it."""
-
-        # Ensure that we don't have more than one row.
-        try:
-            self[1]
-        except IndexError:
-            return self.first(
-                default=default, as_dict=as_dict, as_ordereddict=as_ordereddict
-            )
-        else:
-            raise ValueError(
-                "RecordCollection contained more than one row. "
-                "Expects only one row when using "
-                "RecordCollection.one"
-            )
+        pass
 
     def scalar(self, default=None):
         """Returns the first column of the first row, or `default`."""
-        row = self.one()
-        return row[0] if row else default
+        pass
 
 
 class Database(object):
@@ -271,16 +201,10 @@ class Database(object):
         self._engine = create_engine(self.db_url, **kwargs)
         self.open = True
 
-    def get_engine(self):
-        # Return the engine if open
-        if not self.open:
-            raise exc.ResourceClosedError("Database closed.")
-        return self._engine
 
     def close(self):
         """Closes the Database."""
-        self._engine.dispose()
-        self.open = False
+        pass
 
     def __enter__(self):
         return self
@@ -293,9 +217,7 @@ class Database(object):
 
     def get_table_names(self, internal=False, **kwargs):
         """Returns a list of table names for the connected database."""
-
-        # Setup SQLAlchemy for Database inspection.
-        return inspect(self._engine).get_table_names(**kwargs)
+        pass
 
     def get_connection(self, close_with_result=False):
         """Get a connection to this Database. Connections are retrieved from a
@@ -316,9 +238,7 @@ class Database(object):
 
     def bulk_query(self, query, *multiparams):
         """Bulk insert or update."""
-
-        with self.get_connection() as conn:
-            conn.bulk_query(query, *multiparams)
+        pass
 
     def query_file(self, path, fetchall=False, **params):
         """Like Database.query, but takes a filename to load a query from."""
@@ -328,23 +248,12 @@ class Database(object):
 
     def bulk_query_file(self, path, *multiparams):
         """Like Database.bulk_query, but takes a filename to load a query from."""
-
-        with self.get_connection() as conn:
-            conn.bulk_query_file(path, *multiparams)
+        pass
 
     @contextmanager
     def transaction(self):
         """A context manager for executing a transaction on this Database."""
-
-        conn = self.get_connection()
-        tx = conn.transaction()
-        try:
-            yield conn
-            tx.commit()
-        except:
-            tx.rollback()
-        finally:
-            conn.close()
+        pass
 
 
 class Connection(object):
@@ -355,12 +264,6 @@ class Connection(object):
         self.open = not connection.closed
         self._close_with_result = close_with_result
 
-    def close(self):
-        # No need to close if this connection is used for a single result.
-        # The connection will close when the results are all consumed or GCed.
-        if not self._close_with_result:
-            self._conn.close()
-        self.open = False
 
     def __enter__(self):
         return self
@@ -399,8 +302,7 @@ class Connection(object):
 
     def bulk_query(self, query, *multiparams):
         """Bulk insert or update."""
-
-        self._conn.execute(text(query), *multiparams)
+        pass
 
     def query_file(self, path, fetchall=False, **params):
         """Like Connection.query, but takes a filename to load a query from."""
@@ -424,37 +326,17 @@ class Connection(object):
         """Like Connection.bulk_query, but takes a filename to load a query
         from.
         """
-
-        # If path doesn't exists
-        if not os.path.exists(path):
-            raise IOError("File '{}'' not found!".format(path))
-
-        # If it's a directory
-        if os.path.isdir(path):
-            raise IOError("'{}' is a directory!".format(path))
-
-        # Read the given .sql file into memory.
-        with open(path) as f:
-            query = f.read()
-
-        self._conn.execute(text(query), *multiparams)
+        pass
 
     def transaction(self):
         """Returns a transaction object. Call ``commit`` or ``rollback``
         on the returned object as appropriate."""
-
-        return self._conn.begin()
+        pass
 
 
 def _reduce_datetimes(row):
     """Receives a row, converts datetimes to strings."""
-
-    row = list(row)
-
-    for i, element in enumerate(row):
-        if hasattr(element, "isoformat"):
-            row[i] = element.isoformat()
-    return tuple(row)
+    pass
 
 
 def cli():

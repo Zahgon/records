@@ -22,7 +22,7 @@ class PublishCommand(Command):
     @staticmethod
     def status(s):
         """Prints things in bold."""
-        print("\033[1m{}\033[0m".format(s))
+        pass
 
     def initialize_options(self):
         pass
@@ -30,20 +30,6 @@ class PublishCommand(Command):
     def finalize_options(self):
         pass
 
-    def run(self):
-        try:
-            self.status("Removing previous builds...")
-            rmtree(os.path.join(here, "dist"))
-        except FileNotFoundError:
-            pass
-
-        self.status("Building Source and Wheel (universal) distribution...")
-        os.system("{} setup.py sdist bdist_wheel --universal".format(sys.executable))
-
-        self.status("Uploading the package to PyPi via Twine...")
-        os.system("twine upload dist/*")
-
-        sys.exit()
 
 
 requires = [
